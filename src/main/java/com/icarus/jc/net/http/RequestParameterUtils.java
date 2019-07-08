@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 
 import com.google.gson.Gson;
-import com.icarus.jc.StringUtils;
+import com.icarus.jc.string.StringUtils;
 
 public class RequestParameterUtils {
 

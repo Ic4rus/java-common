@@ -1,5 +1,7 @@
 package com.icarus.jc.net.http;
 
+import com.icarus.jc.string.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -14,8 +16,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import com.icarus.jc.StringUtils;
 
 public class HttpURLConnectionUtils {
 	

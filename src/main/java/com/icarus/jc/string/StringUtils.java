@@ -1,11 +1,11 @@
-package com.icarus.jc;
+package com.icarus.jc.string;
 
 import java.util.List;
 import java.util.Map;
 
 public class StringUtils {
 
-	/**
+    /**
      * Check empty for a String
      *
      * @param s
@@ -44,4 +44,5 @@ public class StringUtils {
     public static boolean isEmpty(Map<?, ?> m) {
         return m == null || m.isEmpty();
     }
+
 }
