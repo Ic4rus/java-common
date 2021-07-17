@@ -1,23 +1,35 @@
 package com.icarus.jc.cert;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
+import com.icarus.jc.string.StringUtils;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.io.pem.PemReader;
+import sun.security.pkcs10.PKCS10;
+import sun.security.util.PendingException;
+import sun.security.x509.X500Name;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
-import java.security.Security;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Date;
 
 public class CertificateUtils {
 
@@ -88,6 +100,36 @@ public class CertificateUtils {
             "4SincpCAvzYDP3MyuANYCGSI38FJIRK1GZ6u1RAiwHuWjlM=\n" +
             "-----END CERTIFICATE-----\n";
 
+    public static KeyPair generateKeyPair() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
+        return keyPairGenerator.generateKeyPair();
+    }
+
+    public static String convertPublicKey2Pem(PublicKey publicKey) {
+        byte[] encodedBytes = publicKey.getEncoded();
+        String encodedBase64 = Base64.getEncoder().encodeToString(encodedBytes);
+        String encodedBase64WithLineFeed = StringUtils.middlePad(encodedBase64, 64, "\n");
+        String pemFormat = "-----BEGIN PUBLIC KEY-----\n%s\n-----END PUBLIC KEY-----\n";
+        return String.format(pemFormat, encodedBase64WithLineFeed);
+    }
+
+    public static String convertPrivateKey2Pem(PrivateKey privateKey) {
+        byte[] encodedBytes = privateKey.getEncoded();
+        String encodedBase64 = Base64.getEncoder().encodeToString(encodedBytes);
+        String encodedBase64WithLineFeed = StringUtils.middlePad(encodedBase64, 64, "\n");
+        String pemFormat = "-----BEGIN RSA PRIVATE KEY-----\n%s\n-----END RSA PRIVATE KEY-----\n";
+        return String.format(pemFormat, encodedBase64WithLineFeed);
+    }
+
+    public static String convertPKCS10ToPem(PKCS10 pkcs10) {
+        byte[] encodedBytes = pkcs10.getEncoded();
+        String encodedBase64 = Base64.getEncoder().encodeToString(encodedBytes);
+        String encodedBase64WithLineFeed = StringUtils.middlePad(encodedBase64, 64, "\n");
+        String pemFormat = "-----BEGIN CERTIFICATE REQUEST-----\n%s\n-----END CERTIFICATE REQUEST-----\n";
+        return String.format(pemFormat, encodedBase64WithLineFeed);
+    }
+
     public static X509Certificate loadX509Certificate() throws CertificateException, UnsupportedEncodingException {
         CertificateFactory factory = CertificateFactory.getInstance("X.509");
         ByteArrayInputStream inputStream = new ByteArrayInputStream(CERTIFICATE.getBytes(StandardCharsets.UTF_8));
@@ -108,6 +150,33 @@ public class CertificateUtils {
 
         KeyPair keyPair = new JcaPEMKeyConverter().getKeyPair(pemKeyPair);
         return null;
+    }
+
+    public static void generatePKCS10()
+            throws NoSuchAlgorithmException, InvalidKeyException, IOException, CertificateException,
+            SignatureException {
+        // Generate key
+        KeyPair keyPair = generateKeyPair();
+        PublicKey publicKey = keyPair.getPublic();
+        PrivateKey privateKey = keyPair.getPrivate();
+
+        System.out.println(convertPublicKey2Pem(publicKey));
+        System.out.println(convertPrivateKey2Pem(privateKey));
+
+        String sigAlg = "MD5WithRSA";
+        PKCS10 pkcs10 = new PKCS10(publicKey);
+        Signature signature = Signature.getInstance(sigAlg);
+        signature.initSign(privateKey);
+        X509Principal principal = new X509Principal("CN=Icarus, OU=Icarus, O=Icarus, L=Hanoi, ST=Hanoi, C=VN");
+        X500Name x500Name = new X500Name(principal.getEncoded());
+        pkcs10.encodeAndSign(x500Name, signature);
+
+        System.out.println(convertPKCS10ToPem(pkcs10));
+    }
+
+    public static void main(String[] args) throws NoSuchAlgorithmException, IOException, InvalidKeyException,
+            CertificateException, SignatureException {
+        generatePKCS10();
     }
 
 }
