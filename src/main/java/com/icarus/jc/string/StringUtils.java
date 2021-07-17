@@ -45,4 +45,14 @@ public class StringUtils {
         return m == null || m.isEmpty();
     }
 
+    public static String middlePad(String str, int length, String padding) {
+        StringBuilder sb = new StringBuilder(str);
+        int offset = length;
+        while (sb.length() > offset) {
+            sb = sb.insert(offset, padding);
+            offset += length + padding.length();
+        }
+        return sb.toString();
+    }
+
 }
