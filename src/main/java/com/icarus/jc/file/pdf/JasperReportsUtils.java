@@ -25,7 +25,7 @@ public class JasperReportsUtils {
 	public static void exportPDF() {
 		
 		try {
-			InputStream template = new FileInputStream("C:\\Users\\thanght1\\Desktop\\certificate.jasper");
+			InputStream template = new FileInputStream("");
 			Map<String, Object> parameter = new HashMap<>();
 			parameter.put("STUDENT_NAME", "Nguyen Hai Duy 2");
 			parameter.put("STUDENT_ID", "FUNZI ID: UMGHS2X9");
